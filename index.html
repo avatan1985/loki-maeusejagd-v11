@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Loki – Mäusejagd v10.6 (Phaser) Alpha</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js">
+<style>
+:root{ --panel:#151833; --line:#23284a; --txt:#ecf1ff; --shadow:rgba(0,0,0,.35); --accent:#ffd166; --good:#06d6a0; --bad:#ff6b6b; }
+*{box-sizing:border-box} html,body{height:100%;margin:0;background:#0b0e1a;color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;overscroll-behavior:none}
+#game{position:fixed; inset:0}
+#hud{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top));padding:10px;display:none;gap:8px;z-index:10;pointer-events:none;align-items:center}
+.pill{background:#14183a;border:1px solid #23284a;border-radius:999px;padding:8px 12px;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:auto}
+.menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:20;background:linear-gradient(180deg,#0b0e1a,#0f1221)}
+.panel{max-width:1000px;width:100%;background:#121534;border:1px solid #23284a;border-radius:16px;padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.panel h1{margin:0 0 8px;font-size:clamp(22px,4vw,42px)} .btn{display:block;width:100%;margin:8px 0;padding:12px 14px;border:1px solid #23284a;background:#0e1230;border-radius:12px;color:#ecf1ff;font-weight:800} .btn:disabled{opacity:.5;pointer-events:none}
+.joy{position:fixed; left: max(16px, env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom)); width:160px; height:160px; border-radius:50%; background:#11162acc; border:1px solid #23284a; touch-action:none; pointer-events:auto; z-index:9}
+.joy.hidden{pointer-events:none; opacity:.15}
+.stick{position:absolute; left:50%; top:50%; width:70px; height:70px; transform:translate(-50%,-50%); border-radius:50%; background:#1c2144; border:2px solid #23284a; box-shadow:0 8px 16px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05)}
+.skillbar{position:fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); display:flex; gap:10px; flex-direction:column; pointer-events:auto; z-index:9}
+.skillbtn{width:80px; height:80px; border-radius:12px; border:1px solid #23284a; background:#14172aee; color:#fff; font-weight:800; position:relative}
+.skillbtn[data-cd]::after{content:attr(data-cd); position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0009; border-radius:12px}
+.minimap{position:fixed; right: max(16px, env(safe-area-inset-right)); top: calc(16px + env(safe-area-inset-top)); width:180px; height:120px; border:1px solid #23284a; border-radius:10px; background:#0e1226c0; box-shadow:0 6px 18px rgba(0,0,0,.35); z-index:8; pointer-events:none}
+.goal{position:fixed; left:50%; transform:translateX(-50%); top: calc(env(safe-area-inset-top) + 54px); background:#0e1230; border:1px solid #23284a; border-radius:14px; padding:6px 10px; box-shadow:0 12px 30px rgba(0,0,0,.35); z-index:11}
+.goal b{color:var(--accent)}
+.overlay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:#0009; z-index:30}
+.overlay .card{background:#121534; border:1px solid #23284a; color:#fff; padding:18px; border-radius:16px; width:min(92vw,560px)}
+</style>
+</head><body>
+<div id="game"></div>
+<div id="hud">
+    <span class="pill">Loki: <b id="cL">0</b></span>
+    <span class="pill">Merlin: <b id="cM">0</b></span>
+    <span class="pill">Yumi: <b id="cY">0</b></span>
+    <span class="pill">Level: <b id="lvl">1</b></span>
+    <span class="pill">Ziel: <b id="goalNeed">15</b> (Rest <b id="goalLeft">15</b>)</span>
+    <span class="pill">XP: <b id="xp">0</b></span>
+    <span class="pill" id="statMsg" style="display:none"></span>
+  <span class="pill" style="margin-left:auto"><button id="btnPause">Pause</button> <button id="btnRestart">Neu</button> <button id="btnMenu">Menü</button> <button id="btnMap">🗺️</button> <button id="btnMute">🔊</button></span>
+</div>
+<div class="joy" id="joy"><div class="stick" id="stick"></div></div>
+<!-- Skill buttons placeholder - functionality not yet implemented -->
+<!-- <div class="skillbar"><button class="skillbtn" id="btnPounce">Pounce</button><button class="skillbtn" id="btnSprint">Sprint</button><button class="skillbtn" id="btnSense">Sense</button></div> -->
+<canvas id="minimap" class="minimap" width="180" height="120"></canvas>
+
+<div class="menu" id="menu"><div class="panel">
+  <h1>🐱 Loki – Mäusejagd <small>v10.6 (Phaser) alpha</small></h1>
+  <button class="btn" id="btnContinue" style="display:none" disabled>Fortsetzen</button>
+  <button class="btn" id="btnNew" disabled>Neues Spiel</button>
+  <button class="btn" id="btnSettings">Einstellungen</button>
+  <button class="btn" id="btnCredits">Credits</button>
+  <div id="settings" style="display:none; margin-top:8px">
+    <div class="panel" style="padding:12px">
+      <h3>Einstellungen</h3>
+      <label style="display:flex; justify-content:space-between; padding:6px 0"><span>Steuerung</span>
+        <select id="ctrl"><option value="joystick">Joystick</option><option value="swipe">Swipe/Drag</option></select></label>
+      <label style="display:flex; justify-content:space-between; padding:6px 0"><span>Joystick-Größe</span><input type="range" min="120" max="180" value="160" id="joySize"></label>
+      <label style="display:flex; justify-content:space-between; padding:6px 0"><span>Mini-Map</span><input type="checkbox" id="mapToggle" checked></label>
+      <label style="display:flex; justify-content:space-between; padding:6px 0"><span>Musik & SFX</span><input type="checkbox" id="sfxToggle" checked></label>
+    </div>
+  </div>
+  <div id="credits" style="display:none; margin-top:8px">
+    <div class="panel" style="padding:12px"><h3>Credits</h3><p>v10.6 – Rivalen-Race (Merlin ab L2, Yumi ab L3), Ziel-Counter, Cartoon-Biomes, Musik & SFX, bessere Maus-AI.</p></div>
+  </div>
+</div></div>
+
+<div class="overlay" id="ovWin"><div class="card"><h2>Level geschafft! 🎉</h2><p id="winMsg"></p><button id="btnNext">Weiter</button></div></div>
+<div class="overlay" id="ovLose"><div class="card"><h2>Verloren 😿</h2><p id="loseMsg"></p><button id="btnRetry">Nochmal</button></div></div>
+
+<audio id="bgm" loop src="bgm.wav"></audio>
+<audio id="sCatch" src="catch.wav"></audio>
+<audio id="sPounce" src="pounce.wav"></audio>
+<audio id="sSprint" src="sprint.wav"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js" onerror="this.onerror=null;this.src='lib/phaser.min.js';"></script>
+<script>
+if(!window.Phaser){
+  document.body.insertAdjacentHTML('beforeend','<div style="color:red;position:fixed;top:0;left:0;">Phaser konnte nicht geladen werden.</div>');
+}
+</script>
+<script src="game.js?v=107"></script>
+</body></html>
