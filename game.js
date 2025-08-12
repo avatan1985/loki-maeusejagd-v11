@@ -257,7 +257,30 @@
     for (let i = 0; i < maxMice(); i++) spawnMouse();
 
     scene.physics.add.collider(loki, obstGroup);
-    scene.physics.add.overlap(loki, miceGroup, (cat, m)=>{ m.destroy(); countL++; xp++; if(sfxToggle.checked){ sCatch.currentTime=0; sCatch.play(); } updHUD(); checkEnd(); });
+    scene.physics.add.overlap(loki, miceGroup, (cat, m)=>{
+      const { x, y } = m;
+      m.destroy();
+      // Particle burst at the mouse position
+      const particles = scene.add.particles('mouse');
+      const emitter = particles.createEmitter({
+        frame: 0,
+        speed: { min: -200, max: 200 },
+        scale: { start: 0.6, end: 0 },
+        lifespan: 300,
+        quantity: 10
+      })
+      emitter.explode(10, x, y);
+      scene.time.delayedCall(300, () => particles.destroy());
+      if (navigator.vibrate) navigator.vibrate(100);
+      countL++;
+      xp++;
+      if (sfxToggle.checked) {
+        sCatch.currentTime = 0;
+        sCatch.play();
+      }
+      updHUD();
+      checkEnd();
+    });
 
     scene.cameras.main.startFollow(loki, false, 0.5, 0.5);
   }
