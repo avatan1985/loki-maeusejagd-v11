@@ -84,7 +84,7 @@
   let scene, layers=null, loki, merlin=null, yumi=null, miceGroup, obstGroup;
   let keys;
   let jdx=0,jdy=0, swipeActive=false, swipeStart=null;
-  const BASE_MICE = /iPhone|iPad|iPod/.test(navigator.userAgent)?800:1000;
+  const BASE_MICE = /iPhone|iPad|iPod/.test(navigator.userAgent)?400:500;
   const DECAY_RATE = 0.9; // 10% fewer mice each level
   const MIN_MICE = 10;
   const lokiStats = { speed: 1000 };
@@ -148,7 +148,7 @@
   function spawnMouse(){
     const SCALE = 2.7; // 50% larger sprite
     const margin = 80 * SCALE;
-    const hitbox = 36 * SCALE * 0.8; // slightly smaller hitbox
+    const hitbox = 36 * SCALE * 0.6; // reduce hitbox for fairer collisions
     const isGolden = Math.random() < 0.05;
     const m = scene.physics.add
       .sprite(margin + Math.random() * (WORLD.w - margin * 2),
@@ -157,7 +157,7 @@
       .play('mouse_run');
     m.setScale(SCALE);
     if(isGolden) m.setTint(0xffd700);
-    m.setCircle(hitbox / 2, (56 * SCALE - hitbox) / 2, (36 * SCALE - hitbox) / 2); // 80% of scaled sprite height
+    m.setCircle(hitbox / 2, (56 * SCALE - hitbox) / 2, (36 * SCALE - hitbox) / 2); // 60% of scaled sprite height
     m.base = 120 + Math.random()*40;
     m.dir = new Phaser.Math.Vector2((Math.random()*2-1),(Math.random()*2-1)).normalize();
     m.body.setVelocity(m.dir.x*m.base, m.dir.y*m.base);
@@ -271,17 +271,18 @@
           g.destroy();
         }
         const particles = scene.add.particles('pixel');
-        const lifespan = 300;
+        const lifespan = 500;
         const radius = (m.displayWidth || 0) * 2;
         const speed = radius / (lifespan / 1000);
         const emitter = particles.createEmitter({
           speed: { min: -speed, max: speed },
-          scale: { start: 2, end: 0 },
+          scale: { start: 3, end: 0 },
           lifespan,
-          quantity: 25,
-          tint: 0xff0000
+          quantity: 40,
+          tint: 0xff0000,
+          alpha: { start: 1, end: 0 }
         });
-        emitter.explode(25, x, y);
+        emitter.explode(40, x, y);
         scene.time.delayedCall(lifespan, () => particles.destroy());
       } catch (err) {
         console.warn('Particle effect failed', err);
