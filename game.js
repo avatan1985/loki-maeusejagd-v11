@@ -263,17 +263,27 @@
       const { x, y } = m;
       m.destroy();
       // Particle burst at the mouse position
-      const particles = scene.add.particles('mouse');
-      const emitter = particles.createEmitter({
-        frame: 0,
-        speed: { min: -200, max: 200 },
-        scale: { start: 0.6, end: 0 },
-        lifespan: 300,
-        quantity: 10
-      })
-      emitter.explode(10, x, y);
-      scene.time.delayedCall(300, () => particles.destroy());
-      if (navigator.vibrate) navigator.vibrate(100);
+      try {
+        const particles = scene.add.particles('mouse');
+        const emitter = particles.createEmitter({
+          frame: 0,
+          speed: { min: -200, max: 200 },
+          scale: { start: 0.6, end: 0 },
+          lifespan: 300,
+          quantity: 10
+        });
+        emitter.explode(10, x, y);
+        scene.time.delayedCall(300, () => particles.destroy());
+      } catch (err) {
+        console.warn('Particle effect failed', err);
+      }
+      try {
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+          navigator.vibrate(100);
+        }
+      } catch (err) {
+        console.warn('Vibration failed', err);
+      }
       countL++;
       xp++;
       if (sfxToggle.checked) {

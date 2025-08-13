@@ -65,9 +65,9 @@ describe('catchMouse', () => {
   const code = fs.readFileSync(__dirname + '/game.js', 'utf8');
 
   test('overlap destroys mouse and increments counters', () => {
-    const overlap = code.match(/scene\.physics\.add\.overlap\(loki,\s*miceGroup,\s*\(cat,\s*m\)=>\{[^]*?\}\);/);
-    expect(overlap).not.toBeNull();
-    const body = overlap[0];
+    const idx = code.indexOf('scene.physics.add.overlap(loki, miceGroup');
+    expect(idx).toBeGreaterThan(-1);
+    const body = code.slice(idx, code.indexOf('checkEnd();', idx));
     expect(body).toMatch(/m\.destroy\(\)/);
     expect(body).toMatch(/countL\+\+/);
     expect(body).not.toMatch(/goalCaught\+\+/);
