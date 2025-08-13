@@ -146,7 +146,7 @@
   }
 
   function spawnMouse(){
-    const SCALE = 1.3;
+    const SCALE = 1.8;
     const margin = 80 * SCALE;
     const isGolden = Math.random() < 0.05;
     const m = scene.physics.add
@@ -264,15 +264,21 @@
       m.destroy();
       // Particle burst at the mouse position
       try {
-        const particles = scene.add.particles('mouse');
+        if (!scene.textures.exists('pixel')) {
+          const g = scene.add.graphics();
+          g.fillStyle(0xffffff, 1).fillRect(0, 0, 4, 4);
+          g.generateTexture('pixel', 4, 4);
+          g.destroy();
+        }
+        const particles = scene.add.particles('pixel');
         const emitter = particles.createEmitter({
-          frame: 0,
           speed: { min: -200, max: 200 },
-          scale: { start: 0.6, end: 0 },
+          scale: { start: 1, end: 0 },
           lifespan: 300,
-          quantity: 10
+          quantity: 15,
+          tint: [0xff4444, 0x44ff44, 0x4444ff, 0xffff44]
         });
-        emitter.explode(10, x, y);
+        emitter.explode(15, x, y);
         scene.time.delayedCall(300, () => particles.destroy());
       } catch (err) {
         console.warn('Particle effect failed', err);
