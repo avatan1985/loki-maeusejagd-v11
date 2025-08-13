@@ -84,7 +84,7 @@
   let scene, layers=null, loki, merlin=null, yumi=null, miceGroup, obstGroup;
   let keys;
   let jdx=0,jdy=0, swipeActive=false, swipeStart=null;
-  const BASE_MICE = /iPhone|iPad|iPod/.test(navigator.userAgent)?400:500;
+  const BASE_MICE = 300;
   const DECAY_RATE = 0.9; // 10% fewer mice each level
   const MIN_MICE = 10;
   const lokiStats = { speed: 1000 };
@@ -148,7 +148,7 @@
   function spawnMouse(){
     const SCALE = 2.7; // 50% larger sprite
     const margin = 80 * SCALE;
-    const hitboxScale = 0.6; // shrink hitbox for precise collisions
+    const hitboxScale = 0.5; // smaller, centered hitbox for precise collisions
     const isGolden = Math.random() < 0.05;
     const m = scene.physics.add
       .sprite(margin + Math.random() * (WORLD.w - margin * 2),
@@ -157,7 +157,10 @@
       .play('mouse_run');
     m.setScale(SCALE);
     if(isGolden) m.setTint(0xffd700);
-    m.body.setSize(m.displayWidth * hitboxScale, m.displayHeight * hitboxScale, true);
+    const hbW = m.displayWidth * hitboxScale;
+    const hbH = m.displayHeight * hitboxScale;
+    m.body.setSize(hbW, hbH);
+    m.body.setOffset((m.displayWidth - hbW) / 2, (m.displayHeight - hbH) / 2);
     m.base = 120 + Math.random()*40;
     m.dir = new Phaser.Math.Vector2((Math.random()*2-1),(Math.random()*2-1)).normalize();
     m.body.setVelocity(m.dir.x*m.base, m.dir.y*m.base);
