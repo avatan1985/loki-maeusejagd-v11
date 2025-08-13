@@ -146,8 +146,9 @@
   }
 
   function spawnMouse(){
-    const SCALE = 1.8;
+    const SCALE = 2.7; // 50% larger sprite
     const margin = 80 * SCALE;
+    const hitbox = 36 * SCALE * 0.8; // slightly smaller hitbox
     const isGolden = Math.random() < 0.05;
     const m = scene.physics.add
       .sprite(margin + Math.random() * (WORLD.w - margin * 2),
@@ -156,8 +157,7 @@
       .play('mouse_run');
     m.setScale(SCALE);
     if(isGolden) m.setTint(0xffd700);
-    const d = 36 * SCALE;
-    m.setCircle(d / 2, (56 * SCALE - d) / 2, (36 * SCALE - d) / 2); // scaled 36px diameter centered in 56×36 sprite
+    m.setCircle(hitbox / 2, (56 * SCALE - hitbox) / 2, (36 * SCALE - hitbox) / 2); // 80% of scaled sprite height
     m.base = 120 + Math.random()*40;
     m.dir = new Phaser.Math.Vector2((Math.random()*2-1),(Math.random()*2-1)).normalize();
     m.body.setVelocity(m.dir.x*m.base, m.dir.y*m.base);
