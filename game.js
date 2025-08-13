@@ -262,7 +262,7 @@
     scene.physics.add.overlap(loki, miceGroup, (cat, m)=>{
       const { x, y } = m;
       m.destroy();
-      // Particle burst at the mouse position
+      // Particle burst of red pixels around the mouse position
       try {
         if (!scene.textures.exists('pixel')) {
           const g = scene.add.graphics();
@@ -271,15 +271,18 @@
           g.destroy();
         }
         const particles = scene.add.particles('pixel');
+        const lifespan = 300;
+        const radius = (m.displayWidth || 0) * 2;
+        const speed = radius / (lifespan / 1000);
         const emitter = particles.createEmitter({
-          speed: { min: -200, max: 200 },
-          scale: { start: 1, end: 0 },
-          lifespan: 300,
-          quantity: 15,
-          tint: [0xff4444, 0x44ff44, 0x4444ff, 0xffff44]
+          speed: { min: -speed, max: speed },
+          scale: { start: 2, end: 0 },
+          lifespan,
+          quantity: 25,
+          tint: 0xff0000
         });
-        emitter.explode(15, x, y);
-        scene.time.delayedCall(300, () => particles.destroy());
+        emitter.explode(25, x, y);
+        scene.time.delayedCall(lifespan, () => particles.destroy());
       } catch (err) {
         console.warn('Particle effect failed', err);
       }
