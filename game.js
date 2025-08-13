@@ -28,7 +28,7 @@
   const skillbar = document.querySelector('.skillbar');
   let gameReady = false;
 
-  const INITIAL_GOAL = 15;
+  const INITIAL_GOAL = 40;
     let state='menu',lvl=1,goal=INITIAL_GOAL;
     let countL=0,countM=0,countY=0,xp=0;
     function updHUD(){ cL.textContent=countL; cM.textContent=countM; cY.textContent=countY; lvlEl.textContent=lvl; goalNeed.textContent=goal; goalLeft.textContent=Math.max(0, goal-countL); xpEl.textContent=xp; }
@@ -148,7 +148,7 @@
   function spawnMouse(){
     const SCALE = 2.7; // 50% larger sprite
     const margin = 80 * SCALE;
-    const hitbox = 36 * SCALE * 0.6; // reduce hitbox for fairer collisions
+    const hitboxScale = 0.6; // shrink hitbox for precise collisions
     const isGolden = Math.random() < 0.05;
     const m = scene.physics.add
       .sprite(margin + Math.random() * (WORLD.w - margin * 2),
@@ -157,7 +157,7 @@
       .play('mouse_run');
     m.setScale(SCALE);
     if(isGolden) m.setTint(0xffd700);
-    m.setCircle(hitbox / 2, (56 * SCALE - hitbox) / 2, (36 * SCALE - hitbox) / 2); // 60% of scaled sprite height
+    m.body.setSize(m.displayWidth * hitboxScale, m.displayHeight * hitboxScale, true);
     m.base = 120 + Math.random()*40;
     m.dir = new Phaser.Math.Vector2((Math.random()*2-1),(Math.random()*2-1)).normalize();
     m.body.setVelocity(m.dir.x*m.base, m.dir.y*m.base);
@@ -199,7 +199,8 @@
 
   function nextLevel(){
     lvl++;
-    goal = Math.floor(goal*1.1); countL=0; countM=0; countY=0;
+    goal += 20;
+    countL=0; countM=0; countY=0;
     applyLevelUp();
     updHUD();
     resetWorld();
